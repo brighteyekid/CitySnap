@@ -7,10 +7,12 @@ const storage = multer.memoryStorage();
 
 // File filter function
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  if (validateImageFile(file)) {
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  
+  if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type or size. Please upload JPEG, PNG, or WebP images under 10MB.'));
+    cb(new Error('Invalid file type. Please upload JPEG, PNG, or WebP images.'));
   }
 };
 

@@ -4,9 +4,9 @@ import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: "dtfpq268d",
+  api_key: "892141439684582",
+  api_secret: "0tEhxpENVxAghzlObVPdes-b1LY",
 });
 
 export interface ProcessedImage {
@@ -160,5 +160,20 @@ export const validateImageFile = (file: Express.Multer.File): boolean => {
   const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
   const maxSize = 10 * 1024 * 1024; // 10MB
 
-  return allowedMimeTypes.includes(file.mimetype) && file.size <= maxSize;
+  // Check mime type
+  if (!allowedMimeTypes.includes(file.mimetype)) {
+    return false;
+  }
+
+  // Check size if available (might not be available during filter phase)
+  if (file.size && file.size > maxSize) {
+    return false;
+  }
+
+  // Check buffer size if file.size is not available
+  if (file.buffer && file.buffer.length > maxSize) {
+    return false;
+  }
+
+  return true;
 };
