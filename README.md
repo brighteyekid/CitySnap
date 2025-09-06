@@ -5,7 +5,7 @@ A comprehensive full-stack web application that enables citizens to report local
 ## 🌟 Features
 
 ### For Citizens
-- **Easy Issue Reporting**: Upload photos, add descriptions, and automatically capture location
+- **Easy Issue Reporting**: Upload photos, add descriptions, and automatically capture locations
 - **Smart Duplicate Prevention**: AI-powered clustering prevents duplicate reports
 - **Community Validation**: Upvote and validate issues reported by others
 - **Real-time Tracking**: Monitor the status of reported issues
