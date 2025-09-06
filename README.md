@@ -94,7 +94,7 @@ A comprehensive full-stack web application that enables citizens to report local
 For production deployment with Docker:
 
 ```bash
-# Copy environment files
+# Copy environment file
 cp server/.env.example server/.env
 cp client/.env.example client/.env.local
 
