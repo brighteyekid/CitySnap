@@ -1,5 +1,5 @@
-// MongoDB initialization script
-db = db.getSiblingDB('civic-problem-solver');
+// MongoDB initialization script for MongoDB shell with auth
+db = db.getSiblingDB('citysnap');
 
 // Create collections
 db.createCollection('users');

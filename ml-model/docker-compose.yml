@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # ML API Service
+  ml-api:
+    build:
+      context: .
+      target: base
+    container_name: civic-ml-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./temp:/app/temp
+    environment:
+      - MODEL_PATH=/app/models/civic_detection.pt
+      - ML_PORT=8000
+      - ENVIRONMENT=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ML Training Service (for development)
+  ml-training:
+    build:
+      context: .
+      target: training
+    container_name: civic-ml-training
+    volumes:
+      - ./training_data:/app/training_data
+      - ./output:/app/output
+      - ./models:/app/models
+    environment:
+      - CUDA_VISIBLE_DEVICES=0  # Set GPU if available
+    profiles:
+      - training
+    command: >
+      sh -c "
+        echo 'Starting training pipeline...' &&
+        python src/train.py --data /app/training_data --output /app/output
+      "
+
+  # Development Environment
+  ml-dev:
+    build:
+      context: .
+      target: development
+    container_name: civic-ml-dev
+    ports:
+      - "8000:8000"  # API
+      - "8888:8888"  # Jupyter
+      - "6006:6006"  # TensorBoard
+    volumes:
+      - ./src:/app/src
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./notebooks:/app/notebooks
+      - ./logs:/app/logs
+    environment:
+      - MODEL_PATH=/app/models/civic_detection.pt
+      - ML_PORT=8000
+      - ENVIRONMENT=development
+      - JUPYTER_ENABLE_LAB=yes
+    profiles:
+      - development
+    command: >
+      sh -c "
+        echo 'Starting development environment...' &&
+        jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' &
+        python src/api.py
+      "
+
+  # Model Evaluation Service
+  ml-eval:
+    build:
+      context: .
+      target: base
+    container_name: civic-ml-eval
+    volumes:
+      - ./models:/app/models
+      - ./test_data:/app/test_data
+      - ./evaluation_results:/app/evaluation_results
+    environment:
+      - MODEL_PATH=/app/models/civic_detection.pt
+    profiles:
+      - evaluation
+    command: >
+      sh -c "
+        echo 'Starting model evaluation...' &&
+        python src/train.py --evaluate /app/models/civic_detection.pt --test-data /app/test_data
+      "
+
+volumes:
+  ml_models:
+    driver: local
+  ml_data:
+    driver: local
+  ml_logs:
+    driver: local
+
+networks:
+  default:
+    name: civic-ml-network

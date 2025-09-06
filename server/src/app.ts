@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import issueRoutes from './routes/issueRoutes';
 import userRoutes from './routes/userRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
+import mlRoutes from './routes/mlRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import cronService from './services/cronService';
 import webhookService from './services/webhookService';
@@ -51,6 +52,7 @@ app.use(morgan('combined'));
 app.use('/api/issues', issueRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/ml', mlRoutes);
 
 // Apply stricter rate limiting to report endpoint
 app.use('/api/issues/report', reportLimiter);

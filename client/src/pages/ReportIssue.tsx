@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { Camera, MapPin, Upload, X, AlertCircle } from 'lucide-react';
+import { Camera, MapPin, Upload, X, AlertCircle, Shield } from 'lucide-react';
 import { useCreateIssue } from '../hooks/useIssues';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { CreateIssueData } from '../types';
@@ -10,6 +10,7 @@ import { CATEGORIES, MAP_CONFIG } from '../utils/constants';
 import { validateFile } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CategoryIcon from '../components/CategoryIcon';
+import MLImageVerification from '../components/MLImageVerification';
 import toast from 'react-hot-toast';
 
 interface FormData extends Omit<CreateIssueData, 'images'> {
@@ -21,6 +22,9 @@ const ReportIssue: React.FC = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [mapPosition, setMapPosition] = useState<[number, number] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mlVerificationResults, setMLVerificationResults] = useState<any[]>([]);
+  const [isMLVerified, setIsMLVerified] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(false);
 
   const navigate = useNavigate();
   const { location, getCurrentPosition, isLoading: locationLoading } = useGeolocation();
@@ -35,6 +39,27 @@ const ReportIssue: React.FC = () => {
   } = useForm<FormData>();
 
   const watchedLocation = watch('location');
+  const watchedCategory = watch('category');
+  const watchedDescription = watch('description');
+
+  // Handle ML verification completion
+  const handleMLVerificationComplete = useCallback((isValid: boolean, results: any[]) => {
+    setIsMLVerified(true);
+    setMLVerificationResults(results);
+    setCanSubmit(isValid);
+    
+    if (!isValid) {
+      toast.error('Some images need attention. Please review the verification results.');
+    } else {
+      toast.success('All images verified successfully!');
+    }
+  }, []);
+
+  // Handle ML verification start
+  const handleMLVerificationStart = useCallback(() => {
+    setIsMLVerified(false);
+    setCanSubmit(false);
+  }, []);
 
   // Map click handler component
   const MapClickHandler = () => {
@@ -356,12 +381,47 @@ const ReportIssue: React.FC = () => {
             </div>
           </div>
 
+          {/* ML Image Verification */}
+          {selectedImages.length > 0 && watchedCategory && (
+            <div className="max-w-4xl mx-auto">
+              <MLImageVerification
+                images={selectedImages}
+                selectedCategory={watchedCategory}
+                description={watchedDescription}
+                onVerificationComplete={handleMLVerificationComplete}
+                onVerificationStart={handleMLVerificationStart}
+              />
+            </div>
+          )}
+
           {/* Submit Button */}
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center space-y-4">
+            {/* ML Verification Status */}
+            {selectedImages.length > 0 && watchedCategory && !canSubmit && isMLVerified && (
+              <div className="flex items-center space-x-2 text-red-600">
+                <Shield className="h-5 w-5" />
+                <span className="text-sm">
+                  Please address the image verification issues before submitting
+                </span>
+              </div>
+            )}
+            
             <button
               type="submit"
-              disabled={isSubmitting || selectedImages.length === 0 || !mapPosition}
-              className="btn-primary px-8 py-3 text-lg flex items-center space-x-2"
+              disabled={
+                isSubmitting || 
+                selectedImages.length === 0 || 
+                !mapPosition || 
+                (selectedImages.length > 0 && watchedCategory && isMLVerified && !canSubmit)
+              }
+              className={`px-8 py-3 text-lg flex items-center space-x-2 rounded-lg font-medium transition-colors ${
+                isSubmitting || 
+                selectedImages.length === 0 || 
+                !mapPosition || 
+                (selectedImages.length > 0 && watchedCategory && isMLVerified && !canSubmit)
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
             >
               {isSubmitting ? (
                 <>
@@ -375,6 +435,12 @@ const ReportIssue: React.FC = () => {
                 </>
               )}
             </button>
+            
+            {/* Help text */}
+            <p className="text-xs text-gray-500 text-center max-w-md">
+              Your images will be verified using AI to ensure they match the selected category. 
+              This helps maintain report quality and accuracy.
+            </p>
           </div>
         </form>
       </div>
