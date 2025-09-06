@@ -103,7 +103,7 @@ cp client/.env.example client/.env.local
 docker-compose up -d
 ```
 
-Access the application at http://localhost
+Access the application at http://localhost:5173
 
 ## 📱 Usage
 
