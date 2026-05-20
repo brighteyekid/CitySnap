@@ -398,6 +398,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React**: Frontend framework
 - **Node.js**: Backend runtime
 
+
+## ✨ Contributors
+
+Thanks to all contributors who helped improve this project.
+
 ---
 
 **Built with ❤️ for better communities**
