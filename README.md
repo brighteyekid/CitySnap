@@ -2,7 +2,7 @@
 
 A comprehensive full-stack web application that enables citizens to report local civic issues and allows authorities to track and resolve them efficiently. Built with modern technologies and designed for scalability, transparency, and community engagement.
 
-## 🌟 Features
+## 🌟 Features as follows
 
 ### For Citizens
 - **Easy Issue Reporting**: Upload photos, add descriptions, and automatically capture locations
